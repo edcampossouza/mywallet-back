@@ -13,7 +13,7 @@ async function addRegistry(data, type, res) {
       .collection("users")
       .findOne({ email: data.email });
     if (!userExists) return res.status(404).send("Usuário não encontrado");
-    await db.collection("registries").insertOne(data );
+    await db.collection("registries").insertOne(data);
     return res
       .status(201)
       .send(`${type === "C" ? "Entrada" : "Saída"} adicionada com sucesso`);
@@ -32,7 +32,6 @@ async function getRegistries(email, type, res) {
     const filter = { email };
     if (type) filter.type = type;
     const registries = await db.collection("registries").find(filter).toArray();
-    console.log(filter, registries)
     return res.status(200).send(registries);
   } catch (error) {
     console.log("addRegistry", error);
@@ -51,13 +50,13 @@ export function addExpense(req, res) {
 }
 
 export function getExpenese(req, res) {
-  getRegistries(req.params.email, "D", res);
+  getRegistries(req.user.email, "D", res);
 }
 
 export function getIncomes(req, res) {
-  getRegistries(req.params.email, "C", res);
+  getRegistries(req.user.email, "C", res);
 }
 
 export function getAllRegistries(req, res) {
-  getRegistries(req.params.email, null, res);
+  getRegistries(req.user.email, null, res);
 }

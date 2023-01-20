@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { protectRoute } from "../controllers/auth.js";
 import {
   addExpense,
   addIncome,
@@ -9,10 +10,11 @@ import {
 
 const registryRouter = Router();
 
+registryRouter.use(protectRoute);
 registryRouter.post("/income", addIncome);
 registryRouter.post("/expense", addExpense);
-registryRouter.get("/income/:email", getIncomes);
-registryRouter.get("/expense/:email", getExpenese);
-registryRouter.get("/registry/:email", getAllRegistries);
+registryRouter.get("/income/", getIncomes);
+registryRouter.get("/expense/", getExpenese);
+registryRouter.get("/registry/", getAllRegistries);
 
 export default registryRouter;

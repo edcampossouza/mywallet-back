@@ -56,10 +56,25 @@ export async function signIn(req, res) {
     } else {
       return res.status(401).send("Usuário ou senha incorretos");
     }
-
-    return;
   } catch (error) {
     console.log("signIn", error);
     return res.status(500).send("Erro no servidor");
   }
+}
+
+export async function protectRoute(req, res, next) {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+  let session, userExists;
+  if (token) session = await db.collection("sessions").findOne({ token });
+  if (session)
+    userExists = await db.collection("users").findOne({ _id: session.userId });
+
+  if (!token || !session || !userExists) {
+    return res.status(401).send("Token inválido");
+  }
+
+  req.user = userExists;
+
+  next();
 }
