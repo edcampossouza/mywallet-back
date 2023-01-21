@@ -4,17 +4,20 @@ import { registryInputSchema } from "../models/registrySchema.js";
 import { errorToMessage } from "./util.js";
 
 async function addRegistry(data, type, res) {
-  const { error } = registryInputSchema.validate(data, { abortEarly: false });
+  const { error, value } = registryInputSchema.validate(data, {
+    abortEarly: false,
+  });
   if (error) {
     return res.status(422).send(errorToMessage(error));
   }
-  data.type = type;
+  value.type = type;
   try {
     const userExists = await db
       .collection("users")
-      .findOne({ _id: ObjectId(data.userId) });
+      .findOne({ _id: ObjectId(value.userId) });
     if (!userExists) return res.status(404).send("Usuário não encontrado");
-    await db.collection("registries").insertOne(data);
+    value.datetime = Date.now();
+    await db.collection("registries").insertOne(value);
     return res
       .status(201)
       .send(`${type === "C" ? "Entrada" : "Saída"} adicionada com sucesso`);
