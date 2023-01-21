@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import db from "../config/database.js";
 import { registryInputSchema } from "../models/registrySchema.js";
 import { errorToMessage } from "./util.js";
@@ -11,7 +12,7 @@ async function addRegistry(data, type, res) {
   try {
     const userExists = await db
       .collection("users")
-      .findOne({ email: data.email });
+      .findOne({ _id: ObjectId(data.userId) });
     if (!userExists) return res.status(404).send("Usuário não encontrado");
     await db.collection("registries").insertOne(data);
     return res
@@ -23,13 +24,15 @@ async function addRegistry(data, type, res) {
   }
 }
 
-async function getRegistries(email, type, res) {
+async function getRegistries(_id, type, res) {
   if (type !== "C" && type !== "D") type = null;
   try {
-    const userExists = await db.collection("users").findOne({ email });
-    if (!userExists || !email)
+    const userExists = await db
+      .collection("users")
+      .findOne({ _id: ObjectId(_id) });
+    if (!userExists || !_id)
       return res.status(404).send("Usuário não encontrado");
-    const filter = { email };
+    const filter = { userId: _id };
     if (type) filter.type = type;
     const registries = await db.collection("registries").find(filter).toArray();
     return res.status(200).send(registries);
@@ -41,22 +44,26 @@ async function getRegistries(email, type, res) {
 
 export function addIncome(req, res) {
   const data = req.body;
+  const { user } = req;
+  data.userId = user?._id?.toString();
   addRegistry(data, "C", res);
 }
 
 export function addExpense(req, res) {
   const data = req.body;
+  const { user } = req;
+  data.userId = user?._id?.toString();
   addRegistry(data, "D", res);
 }
 
 export function getExpenese(req, res) {
-  getRegistries(req.user.email, "D", res);
+  getRegistries(req.user?._id?.toString(), "D", res);
 }
 
 export function getIncomes(req, res) {
-  getRegistries(req.user.email, "C", res);
+  getRegistries(req.user?._id?.toString(), "C", res);
 }
 
 export function getAllRegistries(req, res) {
-  getRegistries(req.user.email, null, res);
+  getRegistries(req.user?._id?.toString(), null, res);
 }

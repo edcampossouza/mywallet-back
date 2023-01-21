@@ -52,7 +52,9 @@ export async function signIn(req, res) {
       await db
         .collection("sessions")
         .insertOne({ userId: userExists._id, token });
-      return res.status(200).send(token);
+      const response = { ...userExists, token };
+      delete response.passwordHash;
+      return res.status(200).send(response);
     } else {
       return res.status(401).send("Usuário ou senha incorretos");
     }
