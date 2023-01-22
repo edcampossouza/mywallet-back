@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { protectRoute } from "../controllers/auth.js";
+import { protectRoute } from "../middlewares/auth.js";
 import {
   addExpense,
   addIncome,
